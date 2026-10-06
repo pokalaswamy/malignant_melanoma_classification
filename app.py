@@ -14,7 +14,7 @@ from flask import Flask, request, render_template
 app = Flask(__name__)
 
 # --- CONFIG ---
-MODEL_PATH = 'model/best_skin_cancer_model.h5'
+MODEL_PATH = ' saved_final/best_skin_cancer_model.h5'
 IMG_HEIGHT = 75
 IMG_WIDTH  = 100
 
