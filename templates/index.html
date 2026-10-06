@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Lesion Analyzer</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #f5f7fa, #e4e9f0);
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h1 {
+            color: #c0392b;
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .upload-area {
+            border: 3px dashed #bdc3c7;
+            border-radius: 12px;
+            padding: 55px 20px;
+            text-align: center;
+            background: #fafbfc;
+            transition: all 0.25s;
+            cursor: pointer;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .upload-area:hover, .upload-area.dragover {
+            border-color: #e74c3c;
+            background: #fff5f5;
+            box-shadow: 0 0 15px rgba(231,76,60,0.2);
+        }
+        .upload-area .icon { font-size: 52px; color: #95a5a6; margin-bottom: 15px; }
+        .upload-area h3 { margin: 10px 0 8px; color: #34495e; }
+        .upload-area p { margin: 0; color: #7f8c8d; }
+        .upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-name {
+            margin-top: 14px;
+            color: #27ae60;
+            font-weight: 500;
+        }
+
+        button.analyze-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 14px 50px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 15px;
+        }
+        button.analyze-btn:hover { background: #c0392b; }
+        button.analyze-btn:disabled { background: #bdc3c7; cursor: not-allowed; }
+
+        .error {
+            color: #c0392b;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .result-title {
+            font-size: 1.7rem;
+            text-align: center;
+            margin: 30px 0 20px;
+            color: #2c3e50;
+        }
+
+        .image-container {
+            max-width: 520px;
+            margin: 0 auto 30px;
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .alert-box {
+            background: #ffebee;
+            color: #c62828;
+            padding: 28px;
+            border-radius: 10px;
+            border: 1px solid #ef9a9a;
+            margin: 0 auto 40px;
+            max-width: 720px;
+            font-size: 1.18rem;
+            line-height: 1.55;
+            text-align: center;
+            white-space: pre-line;
+        }
+
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin: 30px 0;
+        }
+        .card {
+            background: #fdfdfd;
+            border-radius: 10px;
+            padding: 14px;
+            box-shadow: 0 3px 12px rgba(0,0,0,0.07);
+            text-align: center;
+        }
+        .card h3 {
+            margin: 0 0 10px;
+            color: #34495e;
+            font-size: 1.1rem;
+        }
+        img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+
+        .reupload {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .reupload button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 14px 50px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .reupload button:hover { background: #219653; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Skin Lesion Analyzer</h1>
+
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+        <div class="upload-area" id="dropZone">
+            <div class="icon">📤</div>
+            <h3>Drag & Drop Image Here</h3>
+            <p>or click to select file</p>
+            <input type="file" name="file" id="fileInput" accept="image/*" required>
+            <div class="file-name" id="fileNameDisplay">No file selected</div>
+        </div>
+
+        <button type="submit" class="analyze-btn" id="analyzeBtn" disabled>Analyze Image</button>
+    </form>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if original_img %}
+        {% if high_conf_warning %}
+            <!-- Suspicious / high confidence case -->
+            <div class="result-title">Analysis Result</div>
+
+            <div class="image-container">
+                <img src="data:image/png;base64,{{ original_img }}" alt="Uploaded Image">
+            </div>
+
+            <div class="alert-box">
+                {{ high_conf_warning }}
+            </div>
+
+            <div class="reupload">
+                <form method="GET" action="{{ url_for('index') }}">
+                    <button type="submit">Upload Another Image</button>
+                </form>
+            </div>
+        {% else %}
+            <!-- Normal prediction result -->
+            <div class="result-title">
+                Prediction: <strong>{{ predicted_class }}</strong>
+                <span style="color:#27ae60;"> ({{ confidence }})</span>
+            </div>
+
+            <div class="images-grid">
+                <div class="card">
+                    <h3>Original Image</h3>
+                    <img src="data:image/png;base64,{{ original_img }}" alt="Original">
+                </div>
+                <div class="card">
+                    <h3>Explanation Heatmap</h3>
+                    <img src="data:image/png;base64,{{ gradcam_img }}" alt="Heatmap">
+                </div>
+                <div class="card">
+                    <h3>LIME Explanation</h3>
+                    <img src="data:image/png;base64,{{ lime_img }}" alt="LIME">
+                </div>
+                <div class="card">
+                    <h3>Pixel Sensitivity</h3>
+                    <img src="data:image/png;base64,{{ impact_img }}" alt="Pixel Map">
+                </div>
+            </div>
+
+            <div class="reupload">
+                <form method="GET" action="{{ url_for('index') }}">
+                    <button type="submit">Upload Another Image</button>
+                </form>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+
+    dropZone.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT') {
+            fileInput.click();
+            e.preventDefault();
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length > 0) {
+            fileNameDisplay.textContent = `Selected: ${fileInput.files[0].name}`;
+            analyzeBtn.disabled = false;
+        } else {
+            fileNameDisplay.textContent = "No file selected";
+            analyzeBtn.disabled = true;
+        }
+    });
+
+    ['dragenter', 'dragover'].forEach(ev => {
+        dropZone.addEventListener(ev, e => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(ev => {
+        dropZone.addEventListener(ev, e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+    });
+
+    dropZone.addEventListener('drop', e => {
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            fileNameDisplay.textContent = `Selected: ${e.dataTransfer.files[0].name}`;
+            analyzeBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>

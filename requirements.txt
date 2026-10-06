@@ -1,0 +1,23 @@
+# Core data science
+numpy
+pandas
+matplotlib
+seaborn
+
+# Deep Learning
+tensorflow
+# or (if you prefer the standalone keras):
+keras
+tf-slim
+tf_keras
+shap
+lime
+tf-explain
+
+# Image handling
+pillow
+opencv-python
+
+# Web application
+flask
+werkzeug

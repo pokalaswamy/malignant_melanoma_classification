@@ -1,0 +1,23 @@
+# Core data science
+numpy==1.26.4
+pandas==2.2.3
+matplotlib==3.7.2
+seaborn==0.12.0
+
+# Deep Learning
+tensorflow==2.18.0
+# or (if you prefer the standalone keras):
+keras==3.8.0
+tf-slim==1.1.0
+tf_keras==2.18.0
+shap==0.44.1
+lime==0.2.0.1
+tf-explain
+
+# Image handling
+pillow==11.3.0
+opencv-python==4.12.0.88
+
+# Web application
+flask>=2.2.0
+werkzeug>=2.2.0
