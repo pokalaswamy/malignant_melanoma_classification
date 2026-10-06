@@ -20,4 +20,5 @@ opencv-python
 
 # Web application
 flask
-werkzeuggunicorn
+werkzeug 
+gunicorn
